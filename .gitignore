@@ -1,0 +1,8 @@
+# created by virtualenv automatically
+venv310/
+/Search/project_degrees/degrees/large/
+/Search/project_degrees/degrees/small/
+/Knowledge/minesweeper/assets/
+/Search/tictactoe/max_value.log
+/Search/tictactoe/minimax.log
+.DS_Store
