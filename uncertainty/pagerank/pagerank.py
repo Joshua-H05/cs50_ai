@@ -57,7 +57,19 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    probability_distribution = dict()
+    linked = len(corpus[page])
+
+    if linked:
+        for link in corpus[page]:
+            probability_distribution[link] = damping_factor / len(linked)
+            probability_distribution[link] += (1 - damping_factor) / len(corpus)
+
+    else:
+        for link in corpus:
+            probability_distribution[link] = 1 / len(corpus)
+
+    return probability_distribution
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,7 +81,34 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    sample_probability = {}
+    all_pages = []
+
+    for page in corpus.keys():
+        sample_probability[page] = 0
+        all_pages.append(page)
+
+    page = random.choice(all_pages)
+    sample_probability[page] += 1/n
+
+    page_transition_model = transition_model(corpus, page, damping_factor)
+    possible_pages = []
+    page_probabilities = []
+
+    for key, value in page_transition_model.items():
+        possible_pages.append(key)
+        page_probabilities.append(value)
+
+    for value in range(1, n):
+        clicked = random.choices(possible_pages, page_probabilities)
+        sample_probability[clicked] += 1/n
+        possible_pages.clear()
+        page_probabilities.clear()
+
+        chosen_transition_model = transition_model(corpus, clicked, damping_factor)
+        for page, probability in chosen_transition_model.items():
+            possible_pages.append(page)
+            possible_pages.append(probability)
 
 
 def iterate_pagerank(corpus, damping_factor):
@@ -81,7 +120,27 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    """pagerank = dict()
+    n = len(corpus)
+    all_pages = []
+    converged = 0
+    previous_paper_rank = None
+    linking_pages = dict()
+
+    for page in corpus.keys():
+        pagerank[page] = 1/n
+        all_pages.append(page)
+
+    while True:
+        for page in all_pages:
+            previous_paper_rank = pagerank[page]
+            pagerank[page] = (1 - damping_factor) / n
+            for key, value in corpus.items():
+                if page in value:"""
+    pass
+
+
+
 
 
 if __name__ == "__main__":
