@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import pysnooper
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -48,6 +49,7 @@ def crawl(directory):
     return pages
 
 
+@pysnooper.snoop()
 def transition_model(corpus, page, damping_factor):
     """
     Return a probability distribution over which page to visit next,
@@ -62,7 +64,7 @@ def transition_model(corpus, page, damping_factor):
 
     if linked:
         for link in corpus[page]:
-            probability_distribution[link] = damping_factor / len(linked)
+            probability_distribution[link] = damping_factor / linked
             probability_distribution[link] += (1 - damping_factor) / len(corpus)
 
     else:
@@ -81,7 +83,7 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    sample_probability = {}
+    sample_probability = dict()
     all_pages = []
 
     for page in corpus.keys():
@@ -110,6 +112,8 @@ def sample_pagerank(corpus, damping_factor, n):
             possible_pages.append(page)
             possible_pages.append(probability)
 
+    return sample_probability
+
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -120,7 +124,7 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    """pagerank = dict()
+    pagerank = dict()
     n = len(corpus)
     all_pages = []
     converged = 0
@@ -136,8 +140,22 @@ def iterate_pagerank(corpus, damping_factor):
             previous_paper_rank = pagerank[page]
             pagerank[page] = (1 - damping_factor) / n
             for key, value in corpus.items():
-                if page in value:"""
-    pass
+                if page in value:
+                    linking_pages[page] = corpus[page]
+
+            for key, value in linking_pages.items():
+                pagerank[page] += pagerank[key] / len(value)
+
+            linking_pages.clear()
+
+            if abs(previous_paper_rank - pagerank[page]):
+                converged += 1
+                previous_paper_rank = None
+        if converged == len(corpus):
+            return pagerank
+            break
+        else:
+            converged = 0
 
 
 
