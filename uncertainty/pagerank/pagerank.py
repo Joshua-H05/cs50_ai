@@ -49,7 +49,9 @@ def crawl(directory):
     return pages
 
 
-@pysnooper.snoop()
+"""@pysnooper.snoop()"""
+
+
 def transition_model(corpus, page, damping_factor):
     """
     Return a probability distribution over which page to visit next,
@@ -60,18 +62,26 @@ def transition_model(corpus, page, damping_factor):
     a link at random chosen from all pages in the corpus.
     """
     probability_distribution = dict()
-    linked = len(corpus[page])
+    links = len(corpus[page])
+    linked = []
+    for page in corpus[page]:
+        linked.append(page)
 
-    if linked:
-        for link in corpus[page]:
-            probability_distribution[link] = damping_factor / linked
-            probability_distribution[link] += (1 - damping_factor) / len(corpus)
+    if links:
+        for page in corpus.keys():
+            probability_distribution[page] = round((1 - damping_factor) / len(corpus), 4)
+
+        for page in linked:
+            probability_distribution[page] = round(probability_distribution[page] + damping_factor / links, 4)
 
     else:
         for link in corpus:
             probability_distribution[link] = 1 / len(corpus)
 
     return probability_distribution
+
+
+"""@pysnooper.snoop(depth=2)"""
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -85,36 +95,30 @@ def sample_pagerank(corpus, damping_factor, n):
     """
     sample_probability = dict()
     all_pages = []
+    possible_pages = []
+    page_probabilities = []
 
     for page in corpus.keys():
         sample_probability[page] = 0
         all_pages.append(page)
 
-    page = random.choice(all_pages)
-    sample_probability[page] += 1/n
-
-    page_transition_model = transition_model(corpus, page, damping_factor)
-    possible_pages = []
-    page_probabilities = []
-
-    for key, value in page_transition_model.items():
-        possible_pages.append(key)
-        page_probabilities.append(value)
+    clicked = random.choice(all_pages)
+    sample_probability[page] += 1 / n
 
     for value in range(1, n):
-        clicked = random.choices(possible_pages, page_probabilities)
-        sample_probability[clicked] += 1/n
+        transition = transition_model(corpus, clicked, damping_factor)
+        for page, probability in transition.items():
+            possible_pages.append(page)
+            page_probabilities.append(probability)
+        clicked = random.choices(possible_pages, page_probabilities)[0]
+        sample_probability[clicked] += 1 / n
         possible_pages.clear()
         page_probabilities.clear()
-
-        chosen_transition_model = transition_model(corpus, clicked, damping_factor)
-        for page, probability in chosen_transition_model.items():
-            possible_pages.append(page)
-            possible_pages.append(probability)
 
     return sample_probability
 
 
+@pysnooper.snoop(depth=5)
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
@@ -124,40 +128,6 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    pagerank = dict()
-    n = len(corpus)
-    all_pages = []
-    converged = 0
-    previous_paper_rank = None
-    linking_pages = dict()
-
-    for page in corpus.keys():
-        pagerank[page] = 1/n
-        all_pages.append(page)
-
-    while True:
-        for page in all_pages:
-            previous_paper_rank = pagerank[page]
-            pagerank[page] = (1 - damping_factor) / n
-            for key, value in corpus.items():
-                if page in value:
-                    linking_pages[page] = corpus[page]
-
-            for key, value in linking_pages.items():
-                pagerank[page] += pagerank[key] / len(value)
-
-            linking_pages.clear()
-
-            if abs(previous_paper_rank - pagerank[page]):
-                converged += 1
-                previous_paper_rank = None
-        if converged == len(corpus):
-            return pagerank
-            break
-        else:
-            converged = 0
-
-
 
 
 
