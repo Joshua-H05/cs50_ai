@@ -5,7 +5,7 @@ import sys
 import pysnooper
 
 DAMPING = 0.85
-SAMPLES = 1000000
+SAMPLES = 10000
 
 
 def main():
@@ -112,10 +112,10 @@ def sample_pagerank(corpus, damping_factor, n):
         possible_pages.clear()
         page_probabilities.clear()
 
-        sum = 0
+        sample_sum = 0
     for rank in sample_probability.values():
-        sum += rank
-    print(f" Sum: {round(sum, 3)}")
+        sample_sum += rank
+    print(f" Sample sum: {sample_sum}")
     return sample_probability
 
 
@@ -158,10 +158,10 @@ def iterate_pagerank(corpus, damping_factor):
             pagerank[page] = new_pr
 
             if counter == n:
-                total = 0
+                iteration_sum = 0
                 for rank in pagerank.values():
-                    total += rank
-                print(f"sum: {round(total, 3)}")
+                    iteration_sum += rank
+                print(f"Iteration sum: {iteration_sum}")
                 return pagerank
                 break
 
