@@ -141,6 +141,9 @@ def iterate_pagerank(corpus, damping_factor):
             for key, value in corpus.items():
                 if page in value:
                     sigma += pagerank[key] / len(value)
+                if len(value) == 0:
+                    sigma += pagerank[key] / len(corpus)
+
             new_pr = (1 - damping_factor) / n + damping_factor * sigma
 
             if abs(new_pr - pagerank[page]) < 0.0001:
@@ -154,6 +157,7 @@ def iterate_pagerank(corpus, damping_factor):
                     iteration_sum += rank
 
                 print(f"Iteration sum: {iteration_sum}")
+                print(corpus)
 
                 return pagerank
                 break
