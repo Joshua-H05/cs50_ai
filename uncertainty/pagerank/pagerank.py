@@ -64,6 +64,9 @@ def transition_model(corpus, page, damping_factor):
     for page in corpus[page]:
         linked.append(page)
 
+    for page in corpus.keys():
+        probability_distribution[page] = 0
+
     if links:
         for page in corpus.keys():
             probability_distribution[page] = round((1 - damping_factor) / len(corpus), 4)
@@ -150,7 +153,7 @@ def iterate_pagerank(corpus, damping_factor):
 
             new_pr = (1 - damping_factor) / n + damping_factor * sigma
 
-            if abs(new_pr - pagerank[page]) < 0.0001:
+            if abs(new_pr - pagerank[page]) < 0.001:
                 counter += 1
 
             pagerank[page] = new_pr
