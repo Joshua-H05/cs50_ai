@@ -116,10 +116,14 @@ def sample_pagerank(corpus, damping_factor, n):
     for rank in sample_probability.values():
         sample_sum += rank
     print(f" Sample sum: {sample_sum}")
+    print(sample_probability)
+
     return sample_probability
 
 
-@pysnooper.snoop()
+"""@pysnooper.snoop()"""
+
+
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
@@ -157,6 +161,7 @@ def iterate_pagerank(corpus, damping_factor):
                     iteration_sum += rank
 
                 print(f"Iteration sum: {iteration_sum}")
+                print(pagerank)
                 print(corpus)
 
                 return pagerank
