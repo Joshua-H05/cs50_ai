@@ -119,9 +119,7 @@ def sample_pagerank(corpus, damping_factor, n):
     return sample_probability
 
 
-"""@pysnooper.snoop()"""
-
-
+@pysnooper.snoop()
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
@@ -133,24 +131,17 @@ def iterate_pagerank(corpus, damping_factor):
     """
     pagerank = dict()
     n = len(corpus)
-    i = dict()
     counter = 0
 
     for page in corpus.keys():
         pagerank[page] = 1 / n
     while True:
         for page in pagerank.keys():
+            sigma = 0
             for key, value in corpus.items():
                 if page in value:
-                    i[key] = value
-
-            sigma = 0
-
-            for site, links in i.items():
-                sigma += pagerank[site] / len(links)
-
+                    sigma += pagerank[key] / len(value)
             new_pr = (1 - damping_factor) / n + damping_factor * sigma
-            i.clear()
 
             if abs(new_pr - pagerank[page]) < 0.0001:
                 counter += 1
@@ -161,7 +152,9 @@ def iterate_pagerank(corpus, damping_factor):
                 iteration_sum = 0
                 for rank in pagerank.values():
                     iteration_sum += rank
+
                 print(f"Iteration sum: {iteration_sum}")
+
                 return pagerank
                 break
 
