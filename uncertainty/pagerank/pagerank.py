@@ -2,7 +2,6 @@ import os
 import random
 import re
 import sys
-import pysnooper
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -81,9 +80,6 @@ def transition_model(corpus, page, damping_factor):
     return probability_distribution
 
 
-"""@pysnooper.snoop(depth=2)"""
-
-
 def sample_pagerank(corpus, damping_factor, n):
     """
     Return PageRank values for each page by sampling `n` pages
@@ -122,9 +118,6 @@ def sample_pagerank(corpus, damping_factor, n):
     print(sample_probability)
 
     return sample_probability
-
-
-"""@pysnooper.snoop()"""
 
 
 def iterate_pagerank(corpus, damping_factor):
