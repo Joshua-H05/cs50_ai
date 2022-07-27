@@ -5,7 +5,7 @@ import sys
 import pysnooper
 
 DAMPING = 0.85
-SAMPLES = 10000
+SAMPLES = 1000000
 
 
 def main():
@@ -47,9 +47,6 @@ def crawl(directory):
         )
 
     return pages
-
-
-"""@pysnooper.snoop()"""
 
 
 def transition_model(corpus, page, damping_factor):
@@ -115,10 +112,16 @@ def sample_pagerank(corpus, damping_factor, n):
         possible_pages.clear()
         page_probabilities.clear()
 
+        sum = 0
+    for rank in sample_probability.values():
+        sum += rank
+    print(f" Sum: {round(sum, 3)}")
     return sample_probability
 
 
-@pysnooper.snoop(depth=5)
+"""@pysnooper.snoop()"""
+
+
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
@@ -128,7 +131,39 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
+    pagerank = dict()
+    n = len(corpus)
+    i = dict()
+    counter = 0
 
+    for page in corpus.keys():
+        pagerank[page] = 1 / n
+    while True:
+        for page in pagerank.keys():
+            for key, value in corpus.items():
+                if page in value:
+                    i[key] = value
+
+            sigma = 0
+
+            for site, links in i.items():
+                sigma += pagerank[site] / len(links)
+
+            new_pr = (1 - damping_factor) / n + damping_factor * sigma
+            i.clear()
+
+            if abs(new_pr - pagerank[page]) < 0.0001:
+                counter += 1
+
+            pagerank[page] = new_pr
+
+            if counter == n:
+                total = 0
+                for rank in pagerank.values():
+                    total += rank
+                print(f"sum: {round(total, 3)}")
+                return pagerank
+                break
 
 
 if __name__ == "__main__":
