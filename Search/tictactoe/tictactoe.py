@@ -3,7 +3,6 @@ Tic Tac Toe Player
 """
 import copy
 import math
-import pysnooper
 
 X = "X"
 O = "O"

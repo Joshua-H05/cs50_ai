@@ -1,6 +1,5 @@
 import itertools
 import random
-import pysnooper
 
 
 class Minesweeper:
@@ -181,7 +180,6 @@ class MinesweeperAI:
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
-    @pysnooper.snoop()
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -279,7 +277,6 @@ class MinesweeperAI:
                 sentence[0].remove(known_cell)
             known.clear()
 
-    """@pysnooper.snoop()"""
     def make_safe_move(self):
         """
         Returns a safe cell to choose on the Minesweeper board.
