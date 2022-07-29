@@ -6,3 +6,4 @@ venv310/
 /Search/tictactoe/max_value.log
 /Search/tictactoe/minimax.log
 .DS_Store
+/uncertainty/heredity/data/

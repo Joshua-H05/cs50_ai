@@ -38,7 +38,6 @@ PROBS = {
 
 
 def main():
-
     # Check for proper usage
     if len(sys.argv) != 2:
         sys.exit("Usage: python heredity.py data.csv")
@@ -76,7 +75,6 @@ def main():
         # Loop over all sets of people who might have the gene
         for one_gene in powerset(names):
             for two_genes in powerset(names - one_gene):
-
                 # Update probabilities with new joint probability
                 p = joint_probability(people, one_gene, two_genes, have_trait)
                 update(probabilities, one_gene, two_genes, have_trait, p)
@@ -139,7 +137,49 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+    joint_prob = None
+
+    for person in people.keys():
+        gene_count = 0
+        if person in one_gene:
+            gene_count = 1
+        elif person in two_genes:
+            gene_count = 2
+
+        trait = None
+        if person in have_trait:
+            trait = True
+        else:
+            trait = False
+
+        probability_gene = None
+        probability_trait = None
+
+        if people[person]["mother"] is None and people[person]["father"] is None:
+            probability_gene = PROBS["gene"][gene_count]
+            probability_trait = PROBS["trait"][gene_count][trait] # Applies to all cases--> move to bottom later
+
+        else:
+            # Check how many genes each parent has
+            mother = people[person]["mother"]
+            father = people[person]["father"]
+            mother_genes = 0
+            father_genes = 0
+            if mother in one_gene:
+                mother_genes = 1
+            elif mother in two_genes:
+                mother_genes = 2
+
+            if father in one_gene:
+                father_genes = 1
+            elif father in two_genes:
+                father = 2
+
+            # probability of a person not having the gene
+            if gene_count == 0:
+                # The gene cannot be passed by either parent
+                # Probability required: probability of the mother not passing it down AND the father not passing it down
+                probability_gene =
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
