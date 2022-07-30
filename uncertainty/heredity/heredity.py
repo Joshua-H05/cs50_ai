@@ -3,7 +3,6 @@ import itertools
 import sys
 
 import numpy
-import numpy as np
 
 PROBS = {
 
@@ -140,6 +139,41 @@ def inheritance_probability(parent_genes):
     return inheritance_prob
 
 
+def parent_gene_count(people, one_gene, two_genes, child):
+    mother = people[child]["mother"]
+    father = people[child]["father"]
+    mother_genes = 0
+    father_genes = 0
+    if mother in one_gene:
+        mother_genes = 1
+    elif mother in two_genes:
+        mother_genes = 2
+
+    if father in one_gene:
+        father_genes = 1
+    elif father in two_genes:
+        father_genes = 2
+
+    parent_genes = {"mother": mother_genes, "father": father_genes}
+    return parent_genes
+
+
+def grouper(person, one_gene, two_genes, have_trait):
+    gene_count = 0
+    if person in one_gene:
+        gene_count = 1
+    elif person in two_genes:
+        gene_count = 2
+
+    trait = None
+    if person in have_trait:
+        trait = True
+    else:
+        trait = False
+
+    return {"gene_count": gene_count, "trait": trait}
+
+
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -151,72 +185,44 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    joint_prob = None
+    joint_prob = 0
     probs_people = []
-
     for person in people.keys():
-        gene_count = 0
-        if person in one_gene:
-            gene_count = 1
-        elif person in two_genes:
-            gene_count = 2
-
-        trait = None
-        if person in have_trait:
-            trait = True
-        else:
-            trait = False
-
         probability_gene = None
         probability_trait = None
+
+        gene_count = grouper(person, one_gene, two_genes, have_trait)["gene_count"]
+        trait = grouper(person, one_gene, two_genes, have_trait)["trait"]
 
         if people[person]["mother"] is None and people[person]["father"] is None:
             probability_gene = PROBS["gene"][gene_count]
 
         else:
-            # Check how many genes each parent has
-            mother = people[person]["mother"]
-            father = people[person]["father"]
-            mother_genes = 0
-            father_genes = 0
-            if mother in one_gene:
-                mother_genes = 1
-            elif mother in two_genes:
-                mother_genes = 2
+            mother_genes = parent_gene_count(people, one_gene, two_genes, person)["mother"]
+            father_genes = parent_gene_count(people, one_gene, two_genes, person)["father"]
 
-            if father in one_gene:
-                father_genes = 1
-            elif father in two_genes:
-                father_genes = 2
-
-            # probability of a person not having the gene
             if gene_count == 0:
-                # Probability required: probability of the mother not passing it down AND the father not passing it down
                 probability_gene = (1 - inheritance_probability(mother_genes)) * \
                                    (1 - inheritance_probability(father_genes))
 
             if gene_count == 1:
-                # Probability required: probability of the mother passing it down and the father not passing it down
-                # OR the father passing it down and the mother not passing it down
                 probability_gene = \
                     inheritance_probability(mother_genes) * (1 - inheritance_probability(father_genes)) + \
                     inheritance_probability(father_genes) * (1 - inheritance_probability(mother_genes))
 
             if gene_count == 2:
-                # Probability required: probability of the father AND the mother passing the gene down
                 probability_gene = inheritance_probability(mother_genes) * inheritance_probability(father_genes)
 
             # Probability of someone having or not having a trait given a number of genes
-            probability_trait = PROBS["trait"][gene_count][trait]
+        probability_trait = PROBS["trait"][gene_count][trait]
 
-            # Probability of someone having a number of genes and either having or not having a trait
-            joint = probability_gene * probability_trait
+        # Probability of someone having a number of genes and either having or not having a trait
 
-            probs_people.append(joint)
+        joint = probability_gene * probability_trait
+        probs_people.append(joint)
 
-            joint_prob = numpy.prod(probs_people)
-
-            return joint_prob
+    joint_prob = numpy.prod(probs_people)
+    return joint_prob
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
@@ -247,19 +253,20 @@ def normalize(probabilities):
     """
     for person in probabilities:
         crude_probs_gene = 0
-        for probs in probabilities[person]["gene"].values:
+        for probs in probabilities[person]["gene"].values():
             crude_probs_gene += probs
 
         gene_factor = 1 / crude_probs_gene
-        for probs in probabilities[person]["gene"].values:
-            probs *= gene_factor
+        for genes, probs in probabilities[person]["gene"].items():
+            probabilities[person]["gene"][genes] = probs * gene_factor
 
         crude_probs_trait = 0
-        for probs in probabilities[person]["trait"].values:
+        for probs in probabilities[person]["trait"].values():
             crude_probs_trait += probs
 
-        for probs in probabilities[person]["trait"].values:
-            probs *= gene_factor
+        trait_factor = 1 / crude_probs_trait
+        for trait, probs in probabilities[person]["trait"].items():
+            probabilities[person]["trait"][trait] = probs * trait_factor
 
 
 if __name__ == "__main__":
