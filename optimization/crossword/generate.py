@@ -169,6 +169,23 @@ class CrosswordCreator():
         else:
             return True
 
+    def check_length(self, variable, word):
+        if variable.length == len(word):
+            return True
+        else:
+            return False
+
+    def check_uniqueness(self, assignment):
+        difference = len([item for item in assignment.values() if item is not None]) - \
+                     len(set([item for item in d.values() if item is not None]))
+
+        if difference == 0:
+            return True
+        else:
+            return False
+
+    def check_arc_consistency(self):
+
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
@@ -208,7 +225,6 @@ class CrosswordCreator():
 
 
 def main():
-
     # Check usage
     if len(sys.argv) not in [3, 4]:
         sys.exit("Usage: python generate.py structure words [output]")
