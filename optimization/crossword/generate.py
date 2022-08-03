@@ -184,15 +184,37 @@ class CrosswordCreator():
         else:
             return False
 
-    def check_arc_consistency(self):
+    def check_arc_consistency(self, assignment):
+        arc_consistency = None
+        for x in assignment.keys():
+            for y in assignment.keys():
+                if x != y:
+                    if self.revise(x, y) is False:
+                        arc_consistency = True
+                    if self.revise(x, y) is True:
+                        return False
+        return arc_consistency
 
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        raise NotImplementedError
+        results = []
+        for key, value in assignment.items():
+            if value is not None:
+                node_consistency = None  # implement method that checks node consistency
+                uniqueness = self.check_uniqueness(assignment)
+                arc_consistency = self.check_arc_consistency(assignment)
+                if node_consistency is True and uniqueness is True and arc_consistency is True:
+                    results.append(True)
+                else:
+                    results.append(False)
 
+        if False in results:
+            return False
+        else:
+            return True
     def order_domain_values(self, var, assignment):
         """
         Return a list of values in the domain of `var`, in order by
