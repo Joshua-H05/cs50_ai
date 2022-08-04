@@ -87,7 +87,6 @@ class CrosswordCreator():
 
         img.save(filename)
 
-    @pysnooper.snoop(depth=5)
     def solve(self):
         """
         Enforce node and arc consistency, and then solve the CSP.
@@ -95,7 +94,6 @@ class CrosswordCreator():
         self.enforce_node_consistency()
         self.ac3()
         return self.backtrack(dict())
-
 
     def enforce_node_consistency(self):
         """
@@ -122,18 +120,17 @@ class CrosswordCreator():
         if self.crossword.overlaps[x, y] is not None:
             x_overlap = self.crossword.overlaps[x, y][0]
             y_overlap = self.crossword.overlaps[x, y][1]
+            incompatible = []
             for x_word in self.domains[x]:
-                results = []
                 letter = x_word[x_overlap]
-                for y_word in self.domains[y]:
-                    if y_word[y_overlap] == letter:
-                        results.append(True)
-                    else:
-                        results.append(False)
+                compatible = []
+                [compatible.append(y_word) for y_word in self.domains[y] if y_word[y_overlap] == letter]
 
-                if True not in results:
-                    self.domains[x].remove[x_word]
+                if len(compatible) == 0:
+                    incompatible.append(x_word)
                     revised = True
+
+            [self.domains[x].remove(word) for word in incompatible]
 
         return revised
 
@@ -169,10 +166,10 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        if None in assignment.values():  # not sure if this will work
-            return False
-        else:
+        if len(assignment) == len(self.domains):
             return True
+        else:
+            return False
 
     def check_length(self, variable, word):
         if variable.length == len(word):
@@ -182,7 +179,7 @@ class CrosswordCreator():
 
     def check_uniqueness(self, assignment):
         difference = len([item for item in assignment.values() if item is not None]) - \
-                     len(set([item for item in d.values() if item is not None]))
+                     len(set([item for item in assignment.values() if item is not None]))
 
         if difference == 0:
             return True
@@ -192,13 +189,19 @@ class CrosswordCreator():
     def check_arc_consistency(self, assignment):
         arc_consistency = None
         for x in assignment.keys():
-            for y in assignment.keys():
-                if x != y:
-                    if self.revise(x, y) is False:
-                        arc_consistency = True
-                    if self.revise(x, y) is True:
-                        return False
+            for y in self.crossword.neighbors(x):
+                if self.revise(x, y) is False:
+                    arc_consistency = True
+                if self.revise(x, y) is True:
+                    return False
+
         return arc_consistency
+
+    def check_node_consistency(self, assignment):
+        for variable, word in assignment.items():
+            if variable.length != len(word):
+                return False
+        return True
 
     def consistent(self, assignment):
         """
@@ -208,7 +211,7 @@ class CrosswordCreator():
         results = []
         for key, value in assignment.items():
             if value is not None:
-                node_consistency = None  # implement method that checks node consistency
+                node_consistency = self.check_node_consistency(assignment)
                 uniqueness = self.check_uniqueness(assignment)
                 arc_consistency = self.check_arc_consistency(assignment)
                 if node_consistency is True and uniqueness is True and arc_consistency is True:
@@ -242,10 +245,11 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        for variable, word in assignment.items():
-            if word is None:
-                return variable
+        for var in self.domains.keys():
+            if var not in assignment.keys():
+                return var
 
+    @pysnooper.snoop(depth=2)
     def backtrack(self, assignment):
         """
         Using Backtracking Search, take as input a partial assignment for the
@@ -255,7 +259,7 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        if len([value for value in assignment.values() if value is not None]) - len(assignment) == 0:
+        if self.assignment_complete(assignment) is True:
             return assignment
 
         else:
