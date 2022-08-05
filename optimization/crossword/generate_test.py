@@ -132,6 +132,15 @@ class TestCrossWordCreator(unittest.TestCase):
         result = self.crossword_creator.consistent(assignment)
         self.assertEqual(result, False)
 
+    def test_select_unassigned_variable(self):
+        assignment = {
+                      crossword.Variable(0, 1, 'down', 5): 'SEVEN',
+                      crossword.Variable(4, 1, 'across', 4): 'NINE',
+                      crossword.Variable(0, 1, 'across', 3): "SIX",
+                      }
+        variable = self.crossword_creator.select_unassigned_variable(assignment)
+        self.assertEqual(variable, crossword.Variable(1, 4, 'down', 4))
+
     def test_backtrack_complete(self):
         assignment = {crossword.Variable(1, 4, 'down', 4): 'FIVE',
                       crossword.Variable(0, 1, 'down', 5): 'SEVEN',
@@ -141,6 +150,7 @@ class TestCrossWordCreator(unittest.TestCase):
         self.assertEqual(result, assignment)
 
     def test_backtrack_incomplete(self):
+        self.crossword_creator.enforce_node_consistency()
         assignment = {crossword.Variable(1, 4, 'down', 4): 'FIVE',
                       crossword.Variable(0, 1, 'down', 5): 'SEVEN',
                       crossword.Variable(4, 1, 'across', 4): 'NINE',
@@ -151,5 +161,4 @@ class TestCrossWordCreator(unittest.TestCase):
                       crossword.Variable(4, 1, 'across', 4): 'NINE',
                       crossword.Variable(0, 1, 'across', 3): 'SIX'}
         result = self.crossword_creator.backtrack(assignment)
-        """self.assertEqual(result, complete_assignment)"""
-        print(result)
+        self.assertEqual(assignment, complete_assignment)

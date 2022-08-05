@@ -246,10 +246,10 @@ class CrosswordCreator():
         return values.
         """
         for var in self.domains.keys():
-            if var not in assignment.keys():
+            if var not in assignment:
                 return var
 
-    @pysnooper.snoop(depth=2)
+    @pysnooper.snoop(depth=3)
     def backtrack(self, assignment):
         """
         Using Backtracking Search, take as input a partial assignment for the
