@@ -13,7 +13,6 @@ class TestCrossWordCreator(unittest.TestCase):
         for variable, words in self.crossword_creator.domains.items():
             for word in words:
                 self.assertEqual(variable.length, len(word))
-        """print(self.crossword_creator.domains)"""
 
     def test_revise_no_revision(self):
         result = self.crossword_creator.revise(crossword.Variable(0, 1, 'across', 3),
