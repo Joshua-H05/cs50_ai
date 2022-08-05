@@ -4,9 +4,7 @@ from crossword import *
 
 import pysnooper
 
-
 class CrosswordCreator():
-
     def __init__(self, crossword):
         """
         Create new CSP crossword generate.
@@ -87,7 +85,6 @@ class CrosswordCreator():
 
         img.save(filename)
 
-    """@pysnooper.snoop(depth=2)"""
     def solve(self):
         """
         Enforce node and arc consistency, and then solve the CSP.
@@ -144,20 +141,18 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        if arcs:
-            queue = arcs
-        else:
-            queue = []
-            [queue.append(arc) for arc in self.crossword.overlaps.keys() if arc is not None]
+        if arcs is None:
+            arcs = []
+            [arcs.append(arc) for arc in self.crossword.overlaps.keys() if arc is not None]
 
-        while queue:
-            x, y = queue.pop()
+        while arcs:
+            x, y = arcs.pop()
             if self.revise(x, y):
                 if self.domains[x] is None:
                     return False
                 for neighbor in self.crossword.neighbors(x):
                     if neighbor is not y:
-                        queue.append((neighbor, x))
+                        arcs.append((neighbor, x))
         return True
 
     def assignment_complete(self, assignment):
@@ -186,15 +181,14 @@ class CrosswordCreator():
             return False
 
     def check_arc_consistency(self, assignment):
-        arc_consistency = None
         for x in assignment.keys():
-            for y in self.crossword.neighbors(x):
-                if self.revise(x, y) is False:
-                    arc_consistency = True
-                if self.revise(x, y) is True:
-                    return False
+            for y in assignment.keys():
 
-        return arc_consistency
+                if y in self.crossword.neighbors(x):
+                    if assignment[x][self.crossword.overlaps[x, y][0]] != \
+                            assignment[y][self.crossword.overlaps[x, y][1]]:
+                        return False
+        return True
 
     def check_node_consistency(self, assignment):
         for variable, word in assignment.items():
@@ -234,7 +228,7 @@ class CrosswordCreator():
         for word in self.domains[var]:
             values.append(word)
 
-        return word
+        return values
 
     def select_unassigned_variable(self, assignment):
         """
@@ -262,7 +256,7 @@ class CrosswordCreator():
 
         else:
             var = self.select_unassigned_variable(assignment)
-            for value in self.domains[var]:
+            for value in self.order_domain_values(var, assignment):
                 new_assignment = assignment.copy()
                 new_assignment[var] = value
                 if self.consistent(new_assignment):
