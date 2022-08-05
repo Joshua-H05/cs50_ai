@@ -87,6 +87,7 @@ class CrosswordCreator():
 
         img.save(filename)
 
+    """@pysnooper.snoop(depth=2)"""
     def solve(self):
         """
         Enforce node and arc consistency, and then solve the CSP.
@@ -150,15 +151,13 @@ class CrosswordCreator():
             [queue.append(arc) for arc in self.crossword.overlaps.keys() if arc is not None]
 
         while queue:
-            pair = queue.pop()
-            x = pair[0]
-            y = pair[1]
-            if self.revise(x, y) is True:
-                if self.domains[pair[0]] is None:
+            x, y = queue.pop()
+            if self.revise(x, y):
+                if self.domains[x] is None:
                     return False
                 for neighbor in self.crossword.neighbors(x):
                     if neighbor is not y:
-                        queue.append((x, neighbor))
+                        queue.append((neighbor, x))
         return True
 
     def assignment_complete(self, assignment):
@@ -249,7 +248,6 @@ class CrosswordCreator():
             if var not in assignment:
                 return var
 
-    @pysnooper.snoop(depth=3)
     def backtrack(self, assignment):
         """
         Using Backtracking Search, take as input a partial assignment for the
