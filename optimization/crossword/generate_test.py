@@ -42,9 +42,7 @@ class TestCrossWordCreator(unittest.TestCase):
         self.assertEqual(self.crossword_creator.domains[crossword.Variable(0, 1, 'down', 5)],
                          {'SEVEN'})
         self.assertEqual(self.crossword_creator.domains[crossword.Variable(4, 1, 'across', 4)],
-                         {'FOUR', 'NINE', 'FIVE'})
-
-    # Haven't tested behaviour if no result
+                         {'NINE'})
 
     def test_assignment_complete_true(self):
         assignment = {crossword.Variable(4, 1, 'across', 4): "x",
@@ -160,4 +158,16 @@ class TestCrossWordCreator(unittest.TestCase):
                       crossword.Variable(4, 1, 'across', 4): 'NINE',
                       crossword.Variable(0, 1, 'across', 3): 'SIX'}
         result = self.crossword_creator.backtrack(assignment)
-        self.assertEqual(assignment, complete_assignment)
+        self.assertEqual(result, complete_assignment)
+
+    def test_eliminated_possibilities(self):
+        self.crossword_creator.enforce_node_consistency()
+        result = self.crossword_creator.eliminated_possibilities(crossword.Variable(0, 1, 'down', 5), "EIGHT")
+        self.assertEqual(result, ("EIGHT", 7))
+
+    def test_order_domain_values(self):
+        self.crossword_creator.enforce_node_consistency()
+        print(self.crossword_creator.domains)
+        assignment = {}
+        result = self.crossword_creator.order_domain_values(crossword.Variable(0, 1, 'down', 5), assignment)
+        print(result)
