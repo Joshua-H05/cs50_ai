@@ -2,7 +2,6 @@ import sys
 
 from crossword import *
 
-import pysnooper
 
 class CrosswordCreator():
     def __init__(self, crossword):
@@ -61,7 +60,7 @@ class CrosswordCreator():
              self.crossword.height * cell_size),
             "black"
         )
-        font = ImageFont.truetype("optimization/crossword/assets/fonts/OpenSans-Regular.ttf", 80)
+        font = ImageFont.truetype("assets/fonts/OpenSans-Regular.ttf", 80)
         draw = ImageDraw.Draw(img)
 
         for i in range(self.crossword.height):
@@ -267,7 +266,7 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        if self.assignment_complete(assignment) is True:
+        if self.assignment_complete(assignment):
             return assignment
 
         else:
