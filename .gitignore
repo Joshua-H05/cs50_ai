@@ -8,3 +8,5 @@ venv310/
 .DS_Store
 /uncertainty/heredity/data/
 /optimization/crossword/assets/
+/optimization/crossword/data/
+/optimization/crossword/output.png
