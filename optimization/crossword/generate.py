@@ -275,7 +275,11 @@ class CrosswordCreator():
                 new_assignment = assignment.copy()
                 new_assignment[var] = value[0]
                 if self.consistent(new_assignment):
-                    result = self.backtrack(new_assignment)
+                    result = self.backtrack(new_assignment)  # If at any point in the stack,
+                    # there is no possible solution, the self.consistent function on line 277 will evaluate to false and
+                    # the function will return None, which tells the function that takes its output as input to iterate
+                    # one more time and find another result because the one being looked at is not working, because
+                    # if the result is None, line 283 will stop it from being returned
                     if result is not None:
                         return result
             return None
