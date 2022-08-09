@@ -8,7 +8,6 @@ TEST_SIZE = 0.4
 
 
 def main():
-
     # Check command-line arguments
     if len(sys.argv) != 2:
         sys.exit("Usage: python shopping.py data")
@@ -29,6 +28,13 @@ def main():
     print(f"Incorrect: {(y_test != predictions).sum()}")
     print(f"True Positive Rate: {100 * sensitivity:.2f}%")
     print(f"True Negative Rate: {100 * specificity:.2f}%")
+
+
+def check_month(month):
+    months = {"Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "June": 5, "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9,
+              "Nov": 10, "Dec": 11}
+    int_month = months[month]
+    return int_month
 
 
 def load_data(filename):
@@ -59,7 +65,36 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-    raise NotImplementedError
+    evidence = []
+    labels = []
+    with open(filename, newline="") as f:
+        filereader = csv.DictReader(f)
+        print(filereader)
+
+        for row in filereader:
+            client_evidence = [int(row["Administrative"]), float(row["Administrative_Duration"]),
+                               int(row["Informational"]), float(row["Informational_Duration"]),
+                               int(row["ProductRelated"]), float(row["ProductRelated_Duration"]),
+                               float(row["BounceRates"]), float(row["ExitRates"]), float(row["PageValues"]),
+                               float(row["SpecialDay"]), check_month(row["Month"]),
+                               int(row["OperatingSystems"]), int(row["Browser"]), int(row["Region"]),
+                               int(row["TrafficType"])]
+            if row["VisitorType"] == "Returning_Visitor":
+                client_evidence.append(1)
+            else:
+                client_evidence.append(0)
+
+            if row["Weekend"] == "True":
+                client_evidence.append(1)
+            else:
+                client_evidence.append(0)
+
+            evidence.append(client_evidence)
+            if row["Revenue"] == "TRUE":
+                labels.append(1)
+            else:
+                labels.append(0)
+    return evidence, labels
 
 
 def train_model(evidence, labels):
@@ -67,7 +102,10 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+    model = KNeighborsClassifier(n_neighbors=1)
+    model.fit(evidence, labels)
+
+    return model
 
 
 def evaluate(labels, predictions):
@@ -85,7 +123,19 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    sensitivity = float()
+    specificity = float()
+
+    sensitivity_increment = 1 / len([label for label in labels if label == 1])
+    specificity_increment = 1 / len([label for label in labels if label == 0])
+
+    for i in range(len(labels)):
+        if labels[i] == 0 == predictions[i]:
+            specificity += specificity_increment
+        if labels[i] == 1 == predictions[i]:
+            sensitivity += sensitivity_increment
+
+    return sensitivity, specificity
 
 
 if __name__ == "__main__":
