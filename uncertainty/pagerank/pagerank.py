@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import pysnooper
 
 DAMPING = 0.85
 SAMPLES = 10000
@@ -115,10 +116,8 @@ def sample_pagerank(corpus, damping_factor, n):
     for rank in sample_probability.values():
         sample_sum += rank
     print(f" Sample sum: {sample_sum}")
-    print(sample_probability)
 
     return sample_probability
-
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -129,9 +128,9 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    pagerank = dict()
     n = len(corpus)
-    counter = 0
+    pagerank = {page: 1/n for page in corpus.keys()}
+    new_pr = {page: 0 for page in corpus.keys()}
 
     for page in corpus.keys():
         pagerank[page] = 1 / n
@@ -142,26 +141,23 @@ def iterate_pagerank(corpus, damping_factor):
                 if page in value:
                     sigma += pagerank[key] / len(value)
                 if len(value) == 0:
-                    sigma += pagerank[key] / len(corpus)
+                    sigma += pagerank[key] / n
 
-            new_pr = (1 - damping_factor) / n + damping_factor * sigma
+            new_pr[page] = (1 - damping_factor) / n + damping_factor * sigma
 
-            if abs(new_pr - pagerank[page]) < 0.001:
-                counter += 1
-
-            pagerank[page] = new_pr
-
-            if counter == n:
-                iteration_sum = 0
-                for rank in pagerank.values():
-                    iteration_sum += rank
-
-                print(f"Iteration sum: {iteration_sum}")
-                print(pagerank)
-                print(corpus)
-
-                return pagerank
-                break
+        biggest_dif = 0
+        for pg in corpus.keys():
+            dif = abs(pagerank[pg] - new_pr[pg])
+            if dif > biggest_dif:
+                biggest_dif = dif
+        pagerank = new_pr.copy()
+        if biggest_dif < 0.001:
+            total = 0
+            for value in new_pr.values():
+                total += value
+            print(f"Iteration sum {total}")
+            break
+    return new_pr
 
 
 if __name__ == "__main__":

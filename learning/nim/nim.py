@@ -1,7 +1,7 @@
 import math
 import random
 import time
-
+import pysnooper
 
 class Nim():
 
@@ -101,7 +101,11 @@ class NimAI():
         Return the Q-value for the state `state` and the action `action`.
         If no Q-value exists yet in `self.q`, return 0.
         """
-        raise NotImplementedError
+        q_value = self.q[state, action]
+        if q_value:
+            return q_value
+        else:
+            return 0
 
     def update_q_value(self, state, action, old_q, reward, future_rewards):
         """
@@ -118,7 +122,11 @@ class NimAI():
         `alpha` is the learning rate, and `new value estimate`
         is the sum of the current reward and estimated future rewards.
         """
-        raise NotImplementedError
+        new_value_estimate = reward + future_rewards
+
+        new_q_value = old_q + self.alpha * (new_value_estimate - old_q)
+
+        self.q[state, action] = new_q_value
 
     def best_future_reward(self, state):
         """
@@ -130,8 +138,15 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
-        raise NotImplementedError
+        possible_actions = [action for action in self.q.keys() if action[0] == state]
+        if possible_actions:
+            action_rewards = {action: self.q[action] if self.q[action] else 0 for action in possible_actions}
+            return max(action_rewards.values())
 
+        else:
+            return 0
+
+    @pysnooper.snoop()
     def choose_action(self, state, epsilon=True):
         """
         Given a state `state`, return an action `(i, j)` to take.
@@ -147,7 +162,17 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        raise NotImplementedError
+        possible_actions = [action for action in self.q.keys() if action[0] == state]
+        best_actions = [action for action in possible_actions if self.q[action] == self.best_future_reward(state)]
+        if epsilon:
+            randomly_selected_best = random.choice(best_actions)
+            decision = random.choices(("best", "random", [1 - epsilon, epsilon]))
+            if decision == "best":
+                return randomly_selected_best
+            else:
+                return random.choice(possible_actions)
+        else:
+            return random.choice(best_actions)
 
 
 def train(n):
