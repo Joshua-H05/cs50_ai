@@ -129,6 +129,7 @@ def iterate_pagerank(corpus, damping_factor):
     PageRank values should sum to 1.
     """
     n = len(corpus)
+    iterations = 0
     pagerank = {page: 1/n for page in corpus.keys()}
     new_pr = {page: 0 for page in corpus.keys()}
 
@@ -150,14 +151,16 @@ def iterate_pagerank(corpus, damping_factor):
             dif = abs(pagerank[pg] - new_pr[pg])
             if dif > biggest_dif:
                 biggest_dif = dif
-        pagerank = new_pr.copy()
+        iterations += 1
         if biggest_dif < 0.001:
             total = 0
-            for value in new_pr.values():
+            for value in pagerank.values():
                 total += value
             print(f"Iteration sum {total}")
+            print(iterations)
             break
-    return new_pr
+        pagerank = new_pr.copy()
+    return pagerank
 
 
 if __name__ == "__main__":
