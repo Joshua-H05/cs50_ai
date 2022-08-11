@@ -130,11 +130,11 @@ def iterate_pagerank(corpus, damping_factor):
     """
     n = len(corpus)
     pagerank = {}
-    new_pr = {}
 
     for page in corpus.keys():
         pagerank[page] = 1 / n
     while True:
+        new_pr = {}
         for page in pagerank.keys():
             sigma = 0
             for key, value in corpus.items():
