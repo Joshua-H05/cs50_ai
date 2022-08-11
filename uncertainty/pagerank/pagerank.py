@@ -118,6 +118,7 @@ def sample_pagerank(corpus, damping_factor, n):
 
     return sample_probability
 
+
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
@@ -128,9 +129,8 @@ def iterate_pagerank(corpus, damping_factor):
     PageRank values should sum to 1.
     """
     n = len(corpus)
-    iterations = 0
-    pagerank = {page: 1/n for page in corpus.keys()}
-    new_pr = {page: 0 for page in corpus.keys()}
+    pagerank = {}
+    new_pr = {}
 
     for page in corpus.keys():
         pagerank[page] = 1 / n
@@ -145,18 +145,15 @@ def iterate_pagerank(corpus, damping_factor):
 
             new_pr[page] = (1 - damping_factor) / n + damping_factor * sigma
 
-        biggest_dif = 0
+        differences = []
         for pg in corpus.keys():
-            dif = abs(pagerank[pg] - new_pr[pg])
-            if dif > biggest_dif:
-                biggest_dif = dif
-        iterations += 1
-        if biggest_dif < 0.001:
+            differences.append(abs(new_pr[pg] - pagerank[pg]))
+        exceeded_threshold = len([dif for dif in differences if dif > 0.001])
+        if exceeded_threshold == 0:
             total = 0
             for value in pagerank.values():
                 total += value
             print(f"Iteration sum {total}")
-            print(iterations)
             break
         pagerank = new_pr.copy()
     return pagerank
