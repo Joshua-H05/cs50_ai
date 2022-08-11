@@ -101,7 +101,7 @@ class NimAI():
         Return the Q-value for the state `state` and the action `action`.
         If no Q-value exists yet in `self.q`, return 0.
         """
-        q_value = self.q[state, action]
+        q_value = self.q.get((tuple(state), action))
         if q_value:
             return q_value
         else:
@@ -126,7 +126,7 @@ class NimAI():
 
         new_q_value = old_q + self.alpha * (new_value_estimate - old_q)
 
-        self.q[state, action] = new_q_value
+        self.q[tuple(state), tuple(action)] = new_q_value
 
     def best_future_reward(self, state):
         """
@@ -138,15 +138,15 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
-        possible_actions = [action for action in self.q.keys() if action[0] == state]
+        possible_actions = Nim.available_actions(tuple(state))
         if possible_actions:
-            action_rewards = {action: self.q[action] if self.q[action] else 0 for action in possible_actions}
-            return max(action_rewards.values())
+            rewards = [self.get_q_value(tuple(state), action) for action in possible_actions]
+            return max(rewards)
 
         else:
             return 0
 
-    @pysnooper.snoop()
+    """@pysnooper.snoop(depth=2)"""
     def choose_action(self, state, epsilon=True):
         """
         Given a state `state`, return an action `(i, j)` to take.
@@ -162,8 +162,9 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        possible_actions = [action for action in self.q.keys() if action[0] == state]
-        best_actions = [action for action in possible_actions if self.q[action] == self.best_future_reward(state)]
+        possible_actions = list(Nim.available_actions(state))
+        best_actions = [action for action in possible_actions
+                        if self.get_q_value(state, tuple(action)) == self.best_future_reward(state)]
         if epsilon:
             randomly_selected_best = random.choice(best_actions)
             decision = random.choices(("best", "random", [1 - epsilon, epsilon]))
@@ -173,7 +174,6 @@ class NimAI():
                 return random.choice(possible_actions)
         else:
             return random.choice(best_actions)
-
 
 def train(n):
     """
@@ -232,7 +232,6 @@ def train(n):
 
     # Return the trained AI
     return player
-
 
 def play(ai, human_player=None):
     """
