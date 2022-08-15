@@ -11,3 +11,5 @@ venv310/
 /optimization/crossword/data/
 /optimization/crossword/output.png
 /learning/shopping/shopping.csv
+/neural_networks/traffic/gtsrb/
+/neural_networks/traffic/requirements.txt
