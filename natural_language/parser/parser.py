@@ -1,5 +1,6 @@
 import nltk
 import sys
+import pysnooper
 
 TERMINALS = """
 Adj -> "country" | "dreadful" | "enigmatical" | "little" | "moist" | "red"
@@ -15,7 +16,9 @@ V -> "smiled" | "tell" | "were"
 """
 
 NONTERMINALS = """
-S -> N V
+S -> NP VP | NP VP Conj NP VP | NP VP Conj NP VP Adv | NP VP Conj VP
+NP -> N | Adj NP | Det NP | P NP | Det Adj NP
+VP -> V | VP NP | Adv VP NP | VP Adv
 """
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
@@ -55,18 +58,14 @@ def main():
             print(" ".join(np.flatten()))
 
 
+@pysnooper.snoop()
 def reformat(sentence: list) -> list:
     letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
     lower = [word.lower() for word in sentence]
 
-    valid_words = []
-    for word in lower:
-        for letter in letters:
-            if letter in word:
-                valid_words.append(word)
-                continue
+    valid_words = [word for word in lower if word.islower()]
 
     return valid_words
 
