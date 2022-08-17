@@ -55,6 +55,21 @@ def main():
             print(" ".join(np.flatten()))
 
 
+def reformat(sentence: list) -> list:
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+               'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
+    lower = [word.lower() for word in sentence]
+
+    valid_words = []
+    for word in lower:
+        for letter in letters:
+            if letter in word:
+                valid_words.append(word)
+                continue
+
+    return valid_words
+
 def preprocess(sentence):
     """
     Convert `sentence` to a list of its words.
@@ -62,8 +77,10 @@ def preprocess(sentence):
     and removing any word that does not contain at least one alphabetic
     character.
     """
-    raise NotImplementedError
+    crude_sentence = nltk.wordpunct_tokenize(sentence)
+    final = reformat(crude_sentence)
 
+    return final
 
 def np_chunk(tree):
     """
@@ -72,7 +89,28 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    raise NotImplementedError
+    chunks = []
+
+    containers = []
+
+    for sub_tree in tree:
+        label = sub_tree.label()
+        if label == "NP" or label == "VP" or label == "S":
+            containers.append(sub_tree)
+
+    for container in containers:
+        subtrees = container.subtrees()
+
+        for subtree in subtrees:
+            if subtree[0] == "N":
+                chunks.append(container[1])
+                containers.remove(container)
+
+            elif subtree[0] == "NP" or subtree[0] == "VP" or subtree[0] == "S":
+                containers.append(subtree)
+
+    return chunks
+
 
 
 if __name__ == "__main__":
