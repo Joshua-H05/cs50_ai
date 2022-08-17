@@ -13,3 +13,5 @@ venv310/
 /learning/shopping/shopping.csv
 /neural_networks/traffic/gtsrb/
 /neural_networks/traffic/requirements.txt
+/natural_language/parser/sentences/
+/natural_language/parser/requirements.txt
