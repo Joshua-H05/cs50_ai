@@ -15,3 +15,5 @@ venv310/
 /neural_networks/traffic/requirements.txt
 /natural_language/parser/sentences/
 /natural_language/parser/requirements.txt
+/natural_language/questions/corpus/
+/natural_language/questions/requirements.txt
