@@ -4,7 +4,6 @@ import nltk
 import sys
 import numpy
 from operator import itemgetter
-import pysnooper
 
 FILE_MATCHES = 1
 SENTENCE_MATCHES = 1
@@ -60,7 +59,6 @@ def load_files(directory):
 
     return files
 
-@pysnooper.snoop()
 def tokenize(document):
     """
     Given a document (represented as a string), return a list of all of the
