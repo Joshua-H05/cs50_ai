@@ -60,7 +60,7 @@ def load_files(directory):
 
     return files
 
-
+@pysnooper.snoop()
 def tokenize(document):
     """
     Given a document (represented as a string), return a list of all of the
@@ -69,23 +69,20 @@ def tokenize(document):
     Process document by coverting all words to lowercase, and removing any
     punctuation or English stopwords.
     """
-    words = [word.lower() for word in nltk.word_tokenize(document)]
+    """words = [word.lower() for word in nltk.word_tokenize(document)]
     filtered = words.copy()
     for word in words:
         if word in string.punctuation:
             filtered.remove(word)
         if word in nltk.corpus.stopwords.words("english"):
-            filtered.remove(word)
+            filtered.remove(word)"""
+    words = [word.lower() for word in nltk.word_tokenize(document) if not (word in string.punctuation or word in
+                                                                           nltk.corpus.stopwords.words("english"))]
+    # Watch out for and& or statements etc. --> break down into simple pieces using parentheses
 
-    return filtered
-
-
-""" Why does this not work the same way?
-[word.lower() for word in nltk.word_tokenize(document) if word not in string.punctuation and word not in
-             nltk.corpus.stopwords.words("english")]"""
+    return words
 
 
-"""@pysnooper.snoop()"""
 def compute_idfs(documents):
     """
     Given a dictionary of `documents` that maps names of documents to a list
