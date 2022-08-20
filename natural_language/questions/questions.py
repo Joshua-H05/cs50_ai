@@ -79,6 +79,7 @@ def tokenize(document):
     words = [word.lower() for word in nltk.word_tokenize(document) if not (word in string.punctuation or word in
                                                                            nltk.corpus.stopwords.words("english"))]
     # Watch out for and& or statements etc. --> break down into simple pieces using parentheses
+    # Refactoring: Write code that serves the exact same purpose as before but is improved in terms of implementation
 
     return words
 
