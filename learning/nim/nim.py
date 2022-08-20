@@ -1,7 +1,5 @@
-import math
 import random
 import time
-import pysnooper
 
 class Nim():
 
@@ -146,7 +144,6 @@ class NimAI():
         else:
             return 0
 
-    """@pysnooper.snoop(depth=2)"""
     def choose_action(self, state, epsilon=True):
         """
         Given a state `state`, return an action `(i, j)` to take.
