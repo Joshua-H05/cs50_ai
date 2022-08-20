@@ -59,6 +59,7 @@ def load_files(directory):
 
     return files
 
+
 def tokenize(document):
     """
     Given a document (represented as a string), return a list of all of the
