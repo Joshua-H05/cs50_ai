@@ -150,16 +150,18 @@ def top_sentences(query, sentences, idfs, n):
     be given to sentences that have a higher query term density.
     """
     top = []
-    for sentence in sentences:
+    for sentence, sentence_words in sentences.items():
         sentence_idf = 0
         for word in query:
-            if word in sentence:
+            if word in sentence_words:
                 sentence_idf += idfs[word]
         top.append([sentence, sentence_idf])
 
     sorted_top = sorted(top, key=itemgetter(1), reverse=True)
 
-    return sorted_top[:n]
+    sorted_sentences = [sentence[0] for sentence in sorted_top[:n]]
+
+    return sorted_sentences
 
 
 if __name__ == "__main__":
