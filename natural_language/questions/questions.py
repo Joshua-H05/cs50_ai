@@ -1,14 +1,16 @@
 import os
-
+import string
 import nltk
 import sys
+import numpy
+from operator import itemgetter
+import pysnooper
 
 FILE_MATCHES = 1
 SENTENCE_MATCHES = 1
 
 
 def main():
-
     # Check command-line arguments
     if len(sys.argv) != 2:
         sys.exit("Usage: python questions.py corpus")
@@ -50,14 +52,13 @@ def load_files(directory):
     Given a directory name, return a dictionary mapping the filename of each
     `.txt` file inside that directory to the file's contents as a string.
     """
-    contents = dict()
+    files = dict()
 
-    for f in os.listdir(directory):
-        path = os.path.join(directory, f)
-        with open(path, 'r') as file:
-            dict[f] = file.read()
+    for file in os.listdir(directory):
+        with open(os.path.join(directory, file), 'r') as f:
+            files[f] = f.read()
 
-    return contents
+    return files
 
 
 def tokenize(document):
@@ -68,9 +69,23 @@ def tokenize(document):
     Process document by coverting all words to lowercase, and removing any
     punctuation or English stopwords.
     """
-    raise NotImplementedError
+    words = [word.lower() for word in nltk.word_tokenize(document)]
+    filtered = words.copy()
+    for word in words:
+        if word in string.punctuation:
+            filtered.remove(word)
+        if word in nltk.corpus.stopwords.words("english"):
+            filtered.remove(word)
+
+    return filtered
 
 
+""" Why does this not work the same way?
+[word.lower() for word in nltk.word_tokenize(document) if word not in string.punctuation and word not in
+             nltk.corpus.stopwords.words("english")]"""
+
+
+"""@pysnooper.snoop()"""
 def compute_idfs(documents):
     """
     Given a dictionary of `documents` that maps names of documents to a list
@@ -79,7 +94,32 @@ def compute_idfs(documents):
     Any word that appears in at least one of the documents should be in the
     resulting dictionary.
     """
-    raise NotImplementedError
+    idfs = {}
+    values = []
+    for words in documents.values():
+        for word in words:
+            values.append(word)
+
+    total_docs = len(documents)
+
+    for word in values:
+        containing_words = 0
+        for values in documents.values():
+            if word in values:
+                containing_words += 1
+
+        idfs[word] = numpy.log(total_docs / containing_words)
+
+    return idfs
+
+
+def counter(sentence, element):
+    num = 0
+    for word in sentence:
+        if word == element:
+            num += 1
+
+    return num
 
 
 def top_files(query, files, idfs, n):
@@ -89,7 +129,16 @@ def top_files(query, files, idfs, n):
     to their IDF values), return a list of the filenames of the the `n` top
     files that match the query, ranked according to tf-idf.
     """
-    raise NotImplementedError
+    tf_idf = {file: 0 for file in files}
+    for word in query:
+        for file, words in files.items():
+            frequency = counter(words, word)
+            if frequency != 0:
+                tf_idf[file] += frequency * idfs[word]
+
+    sorted_tf_idf = sorted([file for file in files], key=lambda x: tf_idf[x], reverse=True)
+
+    return sorted_tf_idf[:n]
 
 
 def top_sentences(query, sentences, idfs, n):
@@ -100,7 +149,17 @@ def top_sentences(query, sentences, idfs, n):
     the query, ranked according to idf. If there are ties, preference should
     be given to sentences that have a higher query term density.
     """
-    raise NotImplementedError
+    top = []
+    for sentence in sentences:
+        sentence_idf = 0
+        for word in query:
+            if word in sentence:
+                sentence_idf += idfs[word]
+        top.append([sentence, sentence_idf])
+
+    sorted_top = sorted(top, key=itemgetter(1), reverse=True)
+
+    return sorted_top[:n]
 
 
 if __name__ == "__main__":
