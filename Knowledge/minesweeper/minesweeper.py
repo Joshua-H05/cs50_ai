@@ -1,5 +1,6 @@
 import itertools
 import random
+import copy
 
 
 class Minesweeper:
@@ -180,31 +181,7 @@ class MinesweeperAI:
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
-    def add_knowledge(self, cell, count):
-        """
-        Called when the Minesweeper board tells us, for a given
-        safe cell, how many neighboring cells have mines in them.
-
-        This function should:
-            1) mark the cell as a move that has been made
-            2) mark the cell as safe
-            3) add a new sentence to the AI's knowledgebase
-               based on the value of `cell` and `count`
-            4) mark any additional cells as safe or as mines
-               if it can be concluded based on the AI's knowledge base
-            5) add any new sentences to the AI's knowledge base
-               if they can be inferred from existing knowledge
-        """
-        # Marks the cell as a move that has been made
-
-        self.moves_made.add(cell)
-
-        # Marks the cell as safe
-
-        self.safes.add(cell)
-
-        # Adds a new sentence to the KB based on cell and count
-
+    def new_sentence(self, cell, count):
         unidentified_neighbors = set()
 
         for i in range(cell[0] - 1, cell[0] + 2):
@@ -226,9 +203,8 @@ class MinesweeperAI:
         sentence = [unidentified_neighbors, count]
         self.knowledge.append(sentence)
 
-        # Marks any additional cells as safe or as mines
-
-        for sentence in self.knowledge:
+    def additional_labeling(self):
+        for sentence in copy.deepcopy(self.knowledge):
             if sentence[1] == 0:
                 for cell in sentence[0]:
                     self.safes.add(cell)
@@ -238,9 +214,7 @@ class MinesweeperAI:
                 for cell in sentence[0]:
                     self.mines.add(cell)
                 self.knowledge.remove(sentence)
-
-        # add any new sentences to the AI's knowledge base if they can be inferred from existing knowledge
-        # If a set is a subset of another
+    def subset_inference(self):
         new_sentences = []
 
         for main_set in self.knowledge:
@@ -262,7 +236,7 @@ class MinesweeperAI:
                 self.knowledge.append(sentence)
         new_sentences.clear()
 
-        # If a sentence contains a safe or a mine
+    def cleanup(self):
         known = set()
         for sentence in self.knowledge:
             for cell in sentence[0]:
@@ -270,12 +244,33 @@ class MinesweeperAI:
                     known.add(cell)
                 if cell in self.mines:
                     known.add(cell)
-                    print(sentence[1])
                     sentence[1] -= 1
 
             for known_cell in known:
                 sentence[0].remove(known_cell)
             known.clear()
+
+    def add_knowledge(self, cell, count):
+        """
+        Called when the Minesweeper board tells us, for a given
+        safe cell, how many neighboring cells have mines in them.
+
+        This function should:
+            1) mark the cell as a move that has been made
+            2) mark the cell as safe
+            3) add a new sentence to the AI's knowledgebase
+               based on the value of `cell` and `count`
+            4) mark any additional cells as safe or as mines
+               if it can be concluded based on the AI's knowledge base
+            5) add any new sentences to the AI's knowledge base
+               if they can be inferred from existing knowledge
+        """
+        self.moves_made.add(cell)
+        self.safes.add(cell)
+        self.new_sentence(cell, count)
+        self.additional_labeling()
+        self.subset_inference()
+        self.cleanup()
 
     def make_safe_move(self):
         """
