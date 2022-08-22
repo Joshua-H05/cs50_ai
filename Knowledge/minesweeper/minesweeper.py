@@ -201,7 +201,9 @@ class MinesweeperAI:
             unidentified_neighbors.remove(identified_neighbor)
 
         sentence = [unidentified_neighbors, count]
-        self.knowledge.append(sentence)
+        if sentence not in self.knowledge:
+
+            self.knowledge.append(sentence)
 
     def additional_labeling(self):
         for sentence in copy.deepcopy(self.knowledge):
@@ -216,7 +218,6 @@ class MinesweeperAI:
                 self.knowledge.remove(sentence)
 
     def subset_inference(self):
-
         new_sentences = []
 
         for main_set in self.knowledge:
@@ -267,9 +268,13 @@ class MinesweeperAI:
         self.moves_made.add(cell)
         self.safes.add(cell)
         self.new_sentence(cell, count)
-        self.additional_labeling()
-        self.subset_inference()
-        self.cleanup()
+        while True:
+            old_kb = copy.deepcopy(self.knowledge)
+            self.additional_labeling()
+            self.subset_inference()
+            self.cleanup()
+            if old_kb == self.knowledge:
+                break
 
     def make_safe_move(self):
         """
