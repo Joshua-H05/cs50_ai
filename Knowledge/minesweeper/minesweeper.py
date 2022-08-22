@@ -214,17 +214,16 @@ class MinesweeperAI:
                 for cell in sentence[0]:
                     self.mines.add(cell)
                 self.knowledge.remove(sentence)
+
     def subset_inference(self):
+
         new_sentences = []
 
         for main_set in self.knowledge:
             for subset in self.knowledge:
 
-                # ignore it they're the same set
                 if subset[0] == main_set[0]:
                     continue
-
-                # if one is a subset of the other
 
                 if subset[0].issubset(main_set[0]):
                     new_set = main_set[0] - subset[0]
