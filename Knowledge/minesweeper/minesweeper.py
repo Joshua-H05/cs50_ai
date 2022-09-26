@@ -250,6 +250,28 @@ class MinesweeperAI:
                 sentence[0].remove(known_cell)
             known.clear()
 
+    def update_based_on_cell(self, cell):
+        for sentence in self.knowledge:
+            if cell in sentence[0]:
+                sentence[0].remove(cell)
+
+    def cell_sentence(self, cell):
+        neighbors = set()
+
+        for i in range(cell[0] - 1, cell[0] + 2):
+            for j in range(cell[1] - 1, cell[1] + 2):
+                if i in range(0, 8) and j in range(0, 8):
+                    neighbors.add((i, j))
+
+        sentence = [neighbors, Minesweeper.nearby_mines(self, cell)]
+
+        for cell in copy.deepcopy(sentence[0]):
+            if cell in self.safes:
+                sentence[0].remove(cell)
+            if cell in self.mines:
+                sentence[0].remove(cell)
+                sentence[1] -= 1
+
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -268,6 +290,7 @@ class MinesweeperAI:
         self.moves_made.add(cell)
         self.safes.add(cell)
         self.new_sentence(cell, count)
+        self.update_based_on_cell(cell)
         while True:
             old_kb = copy.deepcopy(self.knowledge)
             self.additional_labeling()
