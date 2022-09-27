@@ -256,6 +256,13 @@ class MinesweeperAI:
                 sentence[0].remove(cell)
 
     def cell_sentence(self, cell):
+        self.board = []
+        for i in range(self.height):
+            row = []
+            for j in range(self.width):
+                row.append(False)
+            self.board.append(row)
+
         neighbors = set()
 
         for i in range(cell[0] - 1, cell[0] + 2):
@@ -291,6 +298,7 @@ class MinesweeperAI:
         self.safes.add(cell)
         self.new_sentence(cell, count)
         self.update_based_on_cell(cell)
+        self.cell_sentence(cell)
         while True:
             old_kb = copy.deepcopy(self.knowledge)
             self.additional_labeling()
