@@ -142,7 +142,6 @@ class Sentence:
                 self.cells.remove(cell)
                 # Requirement: still represents a logically correct sentence given that cell is known to be a mine?
 
-
 class MinesweeperAI:
     """
     Minesweeper game player
@@ -252,7 +251,7 @@ class MinesweeperAI:
 
     def update_based_on_cell(self, cell):
         for sentence in self.knowledge:
-            if cell in sentence[0]:
+            if cell in copy.deepcopy(sentence[0]):
                 sentence[0].remove(cell)
 
     def cell_sentence(self, cell, count):
