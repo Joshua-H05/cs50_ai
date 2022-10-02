@@ -1,6 +1,7 @@
 import itertools
 import random
 import copy
+import pysnooper
 
 
 class Minesweeper:
@@ -202,7 +203,6 @@ class MinesweeperAI:
 
         sentence = [unidentified_neighbors, count]
         if sentence not in self.knowledge:
-
             self.knowledge.append(sentence)
 
     def additional_labeling(self):
@@ -255,22 +255,16 @@ class MinesweeperAI:
             if cell in sentence[0]:
                 sentence[0].remove(cell)
 
-    def cell_sentence(self, cell):
-        self.board = []
-        for i in range(self.height):
-            row = []
-            for j in range(self.width):
-                row.append(False)
-            self.board.append(row)
-
+    def cell_sentence(self, cell, count):
         neighbors = set()
 
         for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
                 if i in range(0, 8) and j in range(0, 8):
-                    neighbors.add((i, j))
+                    if (i, j) != cell:
+                        neighbors.add((i, j))
 
-        sentence = [neighbors, Minesweeper.nearby_mines(self, cell)]
+        sentence = [neighbors, count]
 
         for cell in copy.deepcopy(sentence[0]):
             if cell in self.safes:
@@ -278,6 +272,8 @@ class MinesweeperAI:
             if cell in self.mines:
                 sentence[0].remove(cell)
                 sentence[1] -= 1
+        self.knowledge.append(sentence)
+        return sentence
 
     def add_knowledge(self, cell, count):
         """
@@ -298,7 +294,7 @@ class MinesweeperAI:
         self.safes.add(cell)
         self.new_sentence(cell, count)
         self.update_based_on_cell(cell)
-        self.cell_sentence(cell)
+        self.cell_sentence(cell, count)
         while True:
             old_kb = copy.deepcopy(self.knowledge)
             self.additional_labeling()
