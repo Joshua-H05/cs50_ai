@@ -82,5 +82,3 @@ class TestMineSweeperAI(unittest.TestCase):
         self.msai.mines = {(1, 1)}
         result = self.msai.cell_sentence(cell=(1, 0), count=2)
         self.assertEqual(result[1], 1)
-
-

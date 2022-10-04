@@ -1,7 +1,6 @@
 import itertools
 import random
 import copy
-import pysnooper
 
 
 class Minesweeper:
@@ -275,7 +274,6 @@ class MinesweeperAI:
             self.knowledge.append(sentence)
         return sentence
 
-    @pysnooper.snoop(depth=2)
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
