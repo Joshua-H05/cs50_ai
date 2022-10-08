@@ -126,21 +126,21 @@ class Sentence:
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        mines = self.known_mines()
-        if cell in mines:
+
+        # If cell is in the sentence, remove it and decrement count by one
+        if cell in self.cells:
             self.cells.remove(cell)
+            self.count -= 1
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        safes = self.known_safes()
-        if cell in self.cells:
-            if cell in safes:
-                self.cells.remove(cell)
-                # Requirement: still represents a logically correct sentence given that cell is known to be a mine?
 
+        # If cell is in the sentence, remove it, but do not decrement count
+        if cell in self.cells:
+            self.cells.remove(cell)
 class MinesweeperAI:
     """
     Minesweeper game player
@@ -164,22 +164,21 @@ class MinesweeperAI:
 
     def mark_mine(self, cell):
         """
-        Updates internal knowledge representation given the fact that
-        a cell is known to be a mine.
+        Marks a cell as a mine, and updates all knowledge
+        to mark that cell as a mine as well.
         """
-
-        if cell in self.cells:
-            self.cells.remove(cell)
-            self.count -= 1
+        self.mines.add(cell)
+        for sentence in self.knowledge:
+            sentence.mark_mine(cell)
 
     def mark_safe(self, cell):
         """
-        Updates internal knowledge representation given the fact that
-        a cell is known to be safe.
+        Marks a cell as safe, and updates all knowledge
+        to mark that cell as safe as well.
         """
-
-        if cell in self.cells:
-            self.cells.remove(cell)
+        self.safes.add(cell)
+        for sentence in self.knowledge:
+            sentence.mark_safe(cell)
 
     def new_sentence(self, cell, count):
         unidentified_neighbors = set()
