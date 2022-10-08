@@ -164,21 +164,22 @@ class MinesweeperAI:
 
     def mark_mine(self, cell):
         """
-        Marks a cell as a mine, and updates all knowledge
-        to mark that cell as a mine as well.
+        Updates internal knowledge representation given the fact that
+        a cell is known to be a mine.
         """
-        self.mines.add(cell)
-        for sentence in self.knowledge:
-            sentence.mark_mine(cell)
+
+        if cell in self.cells:
+            self.cells.remove(cell)
+            self.count -= 1
 
     def mark_safe(self, cell):
         """
-        Marks a cell as safe, and updates all knowledge
-        to mark that cell as safe as well.
+        Updates internal knowledge representation given the fact that
+        a cell is known to be safe.
         """
-        self.safes.add(cell)
-        for sentence in self.knowledge:
-            sentence.mark_safe(cell)
+
+        if cell in self.cells:
+            self.cells.remove(cell)
 
     def new_sentence(self, cell, count):
         unidentified_neighbors = set()
