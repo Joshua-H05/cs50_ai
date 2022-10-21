@@ -112,6 +112,8 @@ class Sentence:
             for cell in tuple(self.cells):
                 self.mines.add(cell)
             return self.mines
+        else:
+            return set()
 
     def known_safes(self):
         """
@@ -120,6 +122,8 @@ class Sentence:
         cells = self.cells
         if self.count == 0:
             return cells
+        else:
+            return set()
 
     def mark_mine(self, cell):
         """
@@ -195,6 +199,10 @@ class MinesweeperAI:
             if neighbor in self.mines:
                 already_identified.add(neighbor)
                 count -= 1
+
+            if neighbor == cell:
+                unidentified_neighbors.remove(neighbor)
+
         for identified_neighbor in already_identified:
             unidentified_neighbors.remove(identified_neighbor)
 
