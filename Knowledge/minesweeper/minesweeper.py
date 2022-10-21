@@ -127,7 +127,6 @@ class Sentence:
         a cell is known to be a mine.
         """
 
-        # If cell is in the sentence, remove it and decrement count by one
         if cell in self.cells:
             self.cells.remove(cell)
             self.count -= 1
@@ -138,9 +137,9 @@ class Sentence:
         a cell is known to be safe.
         """
 
-        # If cell is in the sentence, remove it, but do not decrement count
         if cell in self.cells:
             self.cells.remove(cell)
+
 class MinesweeperAI:
     """
     Minesweeper game player
