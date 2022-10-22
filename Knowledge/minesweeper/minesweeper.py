@@ -287,20 +287,16 @@ class MinesweeperAI:
         for i in range(cell[0] - 1, cell[0] + 2):
             for j in range(cell[1] - 1, cell[1] + 2):
 
-                # Ignore the cell itself
                 if (i, j) == cell:
                     continue
 
-                # If cells are already safe, ignore them:
                 if (i, j) in self.safes:
                     continue
 
-                # If cells are known to be mines, reduce count by 1 and ignore them:
                 if (i, j) in self.mines:
                     count = count - 1
                     continue
 
-                # Otherwise add them to sentence if they are in the game board:
                 if 0 <= i < self.height and 0 <= j < self.width:
                     new_cells.add((i, j))
 
