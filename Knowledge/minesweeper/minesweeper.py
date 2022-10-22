@@ -281,33 +281,94 @@ class MinesweeperAI:
             self.knowledge.append(sentence)
         return sentence
 
+    def new_sentences(self, cell, count):
+        # Loop over all cells within one row and column
+        new_cells = set()
+        for i in range(cell[0] - 1, cell[0] + 2):
+            for j in range(cell[1] - 1, cell[1] + 2):
+
+                # Ignore the cell itself
+                if (i, j) == cell:
+                    continue
+
+                # If cells are already safe, ignore them:
+                if (i, j) in self.safes:
+                    continue
+
+                # If cells are known to be mines, reduce count by 1 and ignore them:
+                if (i, j) in self.mines:
+                    count = count - 1
+                    continue
+
+                # Otherwise add them to sentence if they are in the game board:
+                if 0 <= i < self.height and 0 <= j < self.width:
+                    new_cells.add((i, j))
+
+        # Add the new sentence to the AI's Knowledge Base:
+        print(f'move made: {cell} new sentence {new_cells} = {count}')
+        self.knowledge.append(Sentence(new_cells, count))
+
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
         safe cell, how many neighboring cells have mines in them.
-
         This function should:
             1) mark the cell as a move that has been made
             2) mark the cell as safe
-            3) add a new sentence to the AI's knowledgebase
+            3) add a new sentence to the AI's knowledge base
                based on the value of `cell` and `count`
             4) mark any additional cells as safe or as mines
                if it can be concluded based on the AI's knowledge base
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+
+        # Mark the cell as a move that has been made, and mark as safe:
+        self.mark_safe(cell)
         self.moves_made.add(cell)
-        self.safes.add(cell)
-        self.new_sentence(cell, count)
-        self.update_based_on_cell(cell)
-        self.cell_sentence(cell, count)
-        while True:
-            old_kb = copy.deepcopy(self.knowledge)
-            self.additional_labeling()
-            self.subset_inference()
-            self.cleanup()
-            if old_kb == self.knowledge:
-                break
+        self.new_sentences(cell, count)
+
+        changed = True
+
+        while changed:
+            changed = False
+            safes = set()
+            mines = set()
+
+            for sentence in self.knowledge:
+                safes = safes.union(sentence.known_safes())
+                mines = mines.union(sentence.known_mines())
+
+            if mines:
+                changed = True
+                for mine in mines:
+                    self.mark_mine(mine)
+            if safes:
+                changed = True
+                for safe in safes:
+                    self.mark_safe(safe)
+
+            for sentence in copy.deepcopy(self.knowledge):
+                empty = Sentence(set(), 0)
+                if sentence == empty:
+                    self.knowledge.remove(sentence)
+
+            for subset in self.knowledge:
+                for main_set in self.knowledge:
+
+                    if subset.cells == main_set.cells:
+                        continue
+
+                    if subset.cells.issubset(main_set.cells):
+                        cells = main_set.cells - subset.cells
+                        count = main_set.count - subset.count
+
+                        new = Sentence(cells, count)
+
+                        if new not in self.knowledge:
+                            changed = True
+                            self.knowledge.append(new)
+
 
     def make_safe_move(self):
         """
