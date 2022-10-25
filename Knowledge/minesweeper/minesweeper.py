@@ -144,6 +144,7 @@ class Sentence:
         if cell in self.cells:
             self.cells.remove(cell)
 
+
 class MinesweeperAI:
     """
     Minesweeper game player
@@ -324,29 +325,28 @@ class MinesweeperAI:
         self.moves_made.add(cell)
         self.new_sentences(cell, count)
 
-        changed = True
+        additions = True
 
-        while changed:
-            changed = False
-            safes = set()
-            mines = set()
+        while additions:
+            all_safes = set()
+            all_mines = set()
+            additions = False
 
             for sentence in self.knowledge:
-                safes = safes.union(sentence.known_safes())
-                mines = mines.union(sentence.known_mines())
+                all_safes = all_safes.union(sentence.known_safes())
+                all_mines = all_mines.union(sentence.known_mines())
 
-            if mines:
-                changed = True
-                for mine in mines:
+            if additions:
+                additions = True
+                for mine in all_mines:
                     self.mark_mine(mine)
-            if safes:
-                changed = True
-                for safe in safes:
+            if all_safes:
+                additions = True
+                for safe in all_safes:
                     self.mark_safe(safe)
 
             for sentence in copy.deepcopy(self.knowledge):
-                empty = Sentence(set(), 0)
-                if sentence == empty:
+                if sentence == Sentence(set(), 0):
                     self.knowledge.remove(sentence)
 
             for subset in self.knowledge:
@@ -356,14 +356,14 @@ class MinesweeperAI:
                         continue
 
                     if subset.cells.issubset(main_set.cells):
-                        cells = main_set.cells - subset.cells
                         count = main_set.count - subset.count
+                        cells = main_set.cells - subset.cells
 
                         new = Sentence(cells, count)
 
                         if new not in self.knowledge:
-                            changed = True
                             self.knowledge.append(new)
+                            additions = True
 
 
     def make_safe_move(self):
