@@ -192,7 +192,7 @@ class MinesweeperAI:
                     unidentified_neighbors.add((i, j))
 
         already_identified = set()
-        for neighbor in copy.deepcopy(unidentified_neighbors):
+        for neighbor in unidentified_neighbors:
             if neighbor in self.safes:
                 already_identified.add(neighbor)
 
@@ -201,24 +201,24 @@ class MinesweeperAI:
                 count -= 1
 
             if neighbor == cell:
-                already_identified.add(neighbor)
+                unidentified_neighbors.remove(neighbor)
 
         for identified_neighbor in already_identified:
             unidentified_neighbors.remove(identified_neighbor)
 
-        sentence = Sentence(unidentified_neighbors, count)
+        sentence = [unidentified_neighbors, count]
         if sentence not in self.knowledge:
             self.knowledge.append(sentence)
 
     def additional_labeling(self):
         for sentence in copy.deepcopy(self.knowledge):
-            if sentence.count == 0:
-                for cell in sentence.cells:
+            if sentence[1] == 0:
+                for cell in sentence[0]:
                     self.safes.add(cell)
                 self.knowledge.remove(sentence)
 
-            elif len(sentence.cells) == sentence.count:
-                for cell in sentence.cells:
+            elif len(sentence[0]) == sentence[1]:
+                for cell in sentence[0]:
                     self.mines.add(cell)
                 self.knowledge.remove(sentence)
 
@@ -228,13 +228,13 @@ class MinesweeperAI:
         for main_set in self.knowledge:
             for subset in self.knowledge:
 
-                if subset.cells == main_set.cells:
+                if subset[0] == main_set[0]:
                     continue
 
-                if subset.cells.issubset(main_set.cells):
-                    new_set = main_set.cells - subset.cells
-                    new_set_count = main_set.count - subset.count
-                    new_sentences.append(Sentence(new_set, new_set_count))
+                if subset[0].issubset(main_set[0]):
+                    new_set = main_set[0] - subset[0]
+                    new_set_count = main_set[1] - subset[1]
+                    new_sentences.append([new_set, new_set_count])
 
         for sentence in new_sentences:
             if sentence not in self.knowledge:
@@ -244,21 +244,21 @@ class MinesweeperAI:
     def cleanup(self):
         known = set()
         for sentence in self.knowledge:
-            for cell in sentence.cells:
+            for cell in sentence[0]:
                 if cell in self.safes:
                     known.add(cell)
                 if cell in self.mines:
                     known.add(cell)
-                    sentence.count -= 1
+                    sentence[1] -= 1
 
             for known_cell in known:
-                sentence.cells.remove(known_cell)
+                sentence[0].remove(known_cell)
             known.clear()
 
     def update_based_on_cell(self, cell):
         for sentence in self.knowledge:
-            if cell in copy.deepcopy(sentence.cells):
-                sentence.cells.remove(cell)
+            if cell in copy.deepcopy(sentence[0]):
+                sentence[0].remove(cell)
 
     def cell_sentence(self, cell, count):
         neighbors = set()
@@ -269,46 +269,95 @@ class MinesweeperAI:
                     if (i, j) != cell:
                         neighbors.add((i, j))
 
-        for cell in copy.deepcopy(neighbors):
+        sentence = [neighbors, count]
+
+        for cell in copy.deepcopy(sentence[0]):
             if cell in self.safes:
-                neighbors.remove(cell)
+                sentence[0].remove(cell)
             if cell in self.mines:
-                neighbors.remove(cell)
-                count -= 1
-
-        sentence = Sentence(neighbors, count)
-
+                sentence[0].remove(cell)
+                sentence[1] -= 1
         if sentence not in self.knowledge:
             self.knowledge.append(sentence)
         return sentence
+
+    def new_sentences(self, cell, count):
+        new_cells = set()
+        for i in range(cell[0] - 1, cell[0] + 2):
+            for j in range(cell[1] - 1, cell[1] + 2):
+
+                if (i, j) != cell:
+
+                    if (i, j) in self.safes:
+                        continue
+
+                    if (i, j) in self.mines:
+                        count = count - 1
+                        continue
+
+                    if 0 <= i < self.height and 0 <= j < self.width:
+                        new_cells.add((i, j))
+        self.knowledge.append(Sentence(new_cells, count))
 
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
         safe cell, how many neighboring cells have mines in them.
-
         This function should:
             1) mark the cell as a move that has been made
             2) mark the cell as safe
-            3) add a new sentence to the AI's knowledgebase
+            3) add a new sentence to the AI's knowledge base
                based on the value of `cell` and `count`
             4) mark any additional cells as safe or as mines
                if it can be concluded based on the AI's knowledge base
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+        self.new_sentences(cell, count)
+        self.mark_safe(cell)
         self.moves_made.add(cell)
-        self.safes.add(cell)
-        self.new_sentence(cell, count)
-        self.update_based_on_cell(cell)
-        self.cell_sentence(cell, count)
-        while True:
-            old_kb = copy.deepcopy(self.knowledge)
-            self.additional_labeling()
-            self.subset_inference()
-            self.cleanup()
-            if old_kb == self.knowledge:
-                break
+
+        additions = True
+
+        while additions:
+            additions = False
+            safe_cells = set()
+            mines = set()
+
+            for sentence in copy.deepcopy(self.knowledge):
+                useless = Sentence(set(), 0)
+                if sentence == useless:
+                    self.knowledge.remove(sentence)
+
+            for sentence in self.knowledge:
+                mines = mines.union(sentence.known_mines())
+                safe_cells = safe_cells.union(sentence.known_safes())
+
+            if safe_cells:
+                additions = True
+                for safe in safe_cells:
+                    self.mark_safe(safe)
+
+            if mines:
+                additions = True
+                for mine in mines:
+                    self.mark_mine(mine)
+
+            for subset in self.knowledge:
+                for main_set in self.knowledge:
+
+                    if subset.cells == main_set.cells:
+                        continue
+
+                    if subset.cells.issubset(main_set.cells):
+                        cells = main_set.cells - subset.cells
+                        count = main_set.count - subset.count
+
+                        new = Sentence(cells, count)
+
+                        if new not in self.knowledge:
+                            additions = True
+                            self.knowledge.append(new)
 
     def make_safe_move(self):
         """

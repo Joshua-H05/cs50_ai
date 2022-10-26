@@ -1,5 +1,5 @@
 import unittest
-from minesweeper import MinesweeperAI
+from minesweeper import MinesweeperAI, Sentence
 
 
 class TestMineSweeperAI(unittest.TestCase):
@@ -17,44 +17,45 @@ class TestMineSweeperAI(unittest.TestCase):
     def test_add_knowledge_unidentified_neighbors(self):
         self.msai.knowledge = []
         self.msai.add_knowledge(cell=(1, 1), count=3)
-        self.assertEqual(self.msai.knowledge, [[{(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)}, 3]])
+        self.assertEqual(self.msai.knowledge,
+                         [Sentence({(0, 0), (0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2)}, 3)])
 
     def test_add_knowledge_unidentified_neighbors_clean_sentence(self):
         self.msai.mines.add((1, 2))
         self.msai.mines.add((0, 0))
         self.msai.safes.add((2, 2))
         self.msai.add_knowledge(cell=(1, 1), count=3)
-        self.assertEqual(self.msai.knowledge, [[{(0, 1), (0, 2), (1, 0), (2, 0), (2, 1)}, 1]])
+        self.assertEqual(self.msai.knowledge, [Sentence({(0, 1), (0, 2), (1, 0), (2, 0), (2, 1)}, 1)])
 
     def test_add_knowledge_add_safes_inference(self):
         self.msai.safes.clear()
-        self.msai.knowledge = [[{(0, 0), (1, 2)}, 0]]
+        self.msai.knowledge = [Sentence({(0, 0), (1, 2)}, 0)]
         self.msai.add_knowledge(cell=(1, 1), count=1)
         self.assertEqual(self.msai.safes, {(0, 0), (1, 2), (1, 1)})
 
     def test_add_knowledge_add_mines(self):
-        self.msai.knowledge = [[{(0, 0), (1, 2)}, 2]]
+        self.msai.knowledge = [Sentence({(0, 0), (1, 2)}, 2)]
         self.msai.add_knowledge(cell=(1, 1), count=0)
         self.assertEqual(self.msai.mines, {(0, 0), (1, 2)})
 
     def test_add_knowledge_add_nothing_mines(self):
-        self.msai.knowledge = [[{(0, 0), (1, 2)}, 1]]
+        self.msai.knowledge = [Sentence({(0, 0), (1, 2)}, 1)]
         self.msai.add_knowledge(cell=(1, 1), count=0)
         self.assertEqual(self.msai.mines, set())
 
     def test_add_knowledge_make_inference(self):
-        self.msai.knowledge.append(({(0, 0), (0, 1), (0, 2), (0, 3)}, 2))
-        self.msai.knowledge.append(({(0, 0), (0, 1)}, 1))
+        self.msai.knowledge.append(Sentence({(0, 0), (0, 1), (0, 2), (0, 3)}, 2))
+        self.msai.knowledge.append(Sentence({(0, 0), (0, 1)}, 1))
         self.msai.add_knowledge(count=2, cell=(6, 6))
-        self.assertIn([{(0, 2), (0, 3)}, 1], self.msai.knowledge)
+        self.assertIn(Sentence({(0, 2), (0, 3)}, 1), self.msai.knowledge)
 
     def test_make_safe_move_no_safe_move(self):
-        self.msai.knowledge.append(({(0, 0), (1, 2)}, 1))
+        self.msai.knowledge.append(Sentence({(0, 0), (1, 2)}, 1))
         safe_move = self.msai.make_safe_move()
         self.assertEqual(safe_move, None)
 
     def test_make_safe_move_safe_move_possible(self):
-        self.msai.knowledge.append(({(0, 0), (1, 2)}, 0))
+        self.msai.knowledge.append(Sentence({(0, 0), (1, 2)}, 0))
         self.msai.add_knowledge(cell=(1, 0), count=1)
         safe_move = self.msai.make_safe_move()
         self.assertIn(safe_move, [(0, 0), (1, 2)])
@@ -70,15 +71,15 @@ class TestMineSweeperAI(unittest.TestCase):
     def test_cell_sentence_removed(self):
         self.msai.mines = {(1, 1)}
         result = self.msai.cell_sentence(cell=(1, 0), count=2)
-        self.assertNotIn((1, 1), result)
+        self.assertNotIn((1, 1), result.cells)
         
     def test_cell_sentence_len(self):
         self.msai.mines = {(1, 1)}
         self.msai.safes = {(0, 0), (2, 0)}
         result = self.msai.cell_sentence(cell=(1, 0), count=2)
-        self.assertEqual(len(result[0]), 2)
+        self.assertEqual(len(result.cells), 2)
 
     def test_cell_sentence_count(self):
         self.msai.mines = {(1, 1)}
         result = self.msai.cell_sentence(cell=(1, 0), count=2)
-        self.assertEqual(result[1], 1)
+        self.assertEqual(result.count, 1)
