@@ -2,6 +2,9 @@ import itertools
 import random
 import copy
 
+# Resubmission: Last time my sentences consisted of lists that contained a set of cells and an integer
+# indicating the count
+# This time, I used instances of the sentence class
 
 class Minesweeper:
     """
