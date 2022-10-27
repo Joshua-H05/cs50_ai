@@ -3,6 +3,7 @@ import random
 import copy
 
 
+
 class Minesweeper:
     """
     Minesweeper game representation
@@ -143,6 +144,7 @@ class Sentence:
 
         if cell in self.cells:
             self.cells.remove(cell)
+
 
 class MinesweeperAI:
     """
